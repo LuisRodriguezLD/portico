@@ -8,7 +8,7 @@ This repository is the product and technical specification, plus the first worki
 
 ## Run the Curb demo
 
-Fobs, beacons, and phones are simulated. A ticket is still issued only when a car reaches the driveway, or when staff enter a family code.
+The public demo is [portico-seven-rho.vercel.app](https://portico-seven-rho.vercel.app). Fobs, beacons, and phones are simulated, and every name is fictional. The afternoon is stored in the browser you open, so two tabs on the same device stay in step. A ticket is still issued only when a car reaches the driveway, or when staff enter a family code.
 
 ```bash
 cd apps/web
