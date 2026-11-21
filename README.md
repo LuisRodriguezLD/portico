@@ -4,7 +4,19 @@
 
 Portico is a school operations platform for private K–12 schools. The first product is carline: staff see who is arriving, in what order, and can call the right students to the pickup zone without a radio scramble. The company is a full school platform — lunch, money, grades, and class communication — sold to the school and used every day by parents.
 
-This repository is the product and technical specification. It is not an application yet. The working name **Portico** still needs a trademark search before it is public-facing in market.
+This repository is the product and technical specification, plus the first working slice of Curb: a dismissal afternoon you can run in the browser. The working name **Portico** still needs a trademark search before it is public-facing in market.
+
+## Run the Curb demo
+
+Fobs, beacons, and phones are simulated. A ticket is still issued only when a car reaches the driveway, or when staff enter a family code.
+
+```bash
+cd apps/web
+npm install
+npm run dev
+```
+
+The dev server listens on port 43123. Open the afternoon page, then the curb, a parent phone, a classroom, the porch, and the office. `npm test` checks the dismissal rules.
 
 ## Who it is for
 
