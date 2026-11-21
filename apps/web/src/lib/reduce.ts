@@ -45,6 +45,20 @@ export function apply(session: Session, action: Action): ApplyResult {
       return decideChange(next, action.changeId, action.approve, action.staffId);
     case "override":
       return override(next, action);
+    case "mark_attendance":
+      return markAttendance(next, action.studentId, action.status, action.staffId);
+    case "submit_roll":
+      return submitRoll(next, action.homeroomId, action.staffId);
+    case "post_announcement":
+      return postAnnouncement(next, action);
+    case "add_event":
+      return addEvent(next, action);
+    case "order_lunch":
+      return orderLunch(next, action.studentId, action.itemId, action.idempotencyKey);
+    case "load_meal":
+      return loadMeal(next, action.studentId, action.amountCents, action.idempotencyKey);
+    case "serve_lunch":
+      return serveLunch(next, action.orderId, action.staffId);
     default:
       return { session: next, error: "Unknown action." };
   }
@@ -247,6 +261,114 @@ function pause(session: Session, staffId: string): ApplyResult {
   return { session };
 }
 
+function markAttendance(session: Session, studentId: string, status: Session["attendance"][string], staffId: string): ApplyResult {
+  const child = student(session, studentId);
+  if (!child) return { session, error: "That student is not on the roster." };
+  session.attendance[studentId] = status;
+  if (status === "absent" || status === "excused") pullFromCarline(session, studentId);
+  if (status === "present" || status === "tardy") restoreToCarline(session, studentId);
+  audit(session, `${staffName(staffId)} marked ${studentName(session, studentId)} ${status}.`);
+  return { session };
+}
+
+function submitRoll(session: Session, homeroomId: string, staffId: string): ApplyResult {
+  const members = session.students.filter((child) => child.homeroomId === homeroomId);
+  if (members.length === 0) return { session, error: "That room has no students." };
+  for (const child of members) {
+    if (!session.attendance[child.id] || session.attendance[child.id] === "unmarked") {
+      session.attendance[child.id] = "present";
+    }
+  }
+  audit(session, `${staffName(staffId)} submitted the roll for ${members[0].teacher}.`);
+  return { session };
+}
+
+function postAnnouncement(session: Session, action: Extract<Action, { type: "post_announcement" }>): ApplyResult {
+  if (!action.title.trim() || !action.body.trim()) return { session, error: "An announcement needs a title and a body." };
+  session.announcements.unshift({
+    id: `ann-${session.announcements.length + 1}`,
+    title: action.title.trim(),
+    body: action.body.trim(),
+    audience: action.audience,
+    audienceRef: action.audienceRef,
+  });
+  audit(session, `${staffName(action.staffId)} posted “${action.title.trim()}”.`);
+  return { session };
+}
+
+function addEvent(session: Session, action: Extract<Action, { type: "add_event" }>): ApplyResult {
+  if (!action.title.trim() || !action.whenLabel.trim()) return { session, error: "An event needs a title and a time." };
+  session.events.unshift({
+    id: `evt-${session.events.length + 1}`,
+    title: action.title.trim(),
+    whenLabel: action.whenLabel.trim(),
+    audience: action.audience,
+    audienceRef: action.audienceRef,
+  });
+  audit(session, `${staffName(action.staffId)} added ${action.title.trim()} to the calendar.`);
+  return { session };
+}
+
+function orderLunch(session: Session, studentId: string, itemId: string, idempotencyKey: string): ApplyResult {
+  if (session.orderKeys.includes(idempotencyKey)) return { session };
+  const child = student(session, studentId);
+  const item = session.menu.find((row) => row.id === itemId);
+  if (!child || !item) return { session, error: "That meal is not on today's menu." };
+  const conflict = item.allergens.find((tag) => child.allergens.includes(tag));
+  if (conflict) {
+    audit(session, `Refused ${item.name} for ${child.firstName} ${child.lastName}: ${conflict}.`);
+    return { session, error: `${item.name} includes ${conflict}. It cannot be ordered for ${child.firstName}.` };
+  }
+  if (!child.mealNoCharge && child.mealBalanceCents < item.priceCents) {
+    return { session, error: `${child.firstName}'s meal balance is too low for ${item.name}.` };
+  }
+  if (!child.mealNoCharge) child.mealBalanceCents -= item.priceCents;
+  session.orders.unshift({ id: `ord-${session.orders.length + 1}`, studentId, itemId, status: "ordered" });
+  session.orderKeys.push(idempotencyKey);
+  audit(session, `${child.firstName} ${child.lastName} ordered ${item.name}.`);
+  return { session };
+}
+
+function loadMeal(session: Session, studentId: string, amountCents: number, idempotencyKey: string): ApplyResult {
+  if (session.orderKeys.includes(idempotencyKey)) return { session };
+  const child = student(session, studentId);
+  if (!child) return { session, error: "That student is not on the roster." };
+  if (amountCents <= 0) return { session, error: "Add a positive amount." };
+  child.mealBalanceCents += amountCents;
+  session.orderKeys.push(idempotencyKey);
+  audit(session, `Loaded $${(amountCents / 100).toFixed(2)} onto ${studentName(session, studentId)}'s meal account.`);
+  return { session };
+}
+
+function serveLunch(session: Session, orderId: string, staffId: string): ApplyResult {
+  const order = session.orders.find((row) => row.id === orderId);
+  if (!order) return { session, error: "That order is not on the board." };
+  if (order.status === "served") return { session };
+  order.status = "served";
+  audit(session, `${staffName(staffId)} served ${studentName(session, order.studentId)}.`);
+  return { session };
+}
+
+function pullFromCarline(session: Session, studentId: string) {
+  for (const vehicle of session.vehicles) {
+    const state = vehicle.studentStates[studentId];
+    if (state === "in_class" || state === "called") vehicle.studentStates[studentId] = "skipped";
+    const stillWaiting = Object.values(vehicle.studentStates).some((value) => value === "in_class" || value === "called" || value === "held");
+    if (!stillWaiting && vehicle.state !== "released") vehicle.state = "cancelled";
+  }
+}
+
+function restoreToCarline(session: Session, studentId: string) {
+  const child = student(session, studentId);
+  if (!child || child.blocked) return;
+  for (const vehicle of session.vehicles) {
+    if (vehicle.studentStates[studentId] === "skipped") {
+      vehicle.studentStates[studentId] = "in_class";
+      if (vehicle.state === "cancelled" && vehicle.ticket != null) vehicle.state = "in_queue";
+    }
+  }
+}
+
 function requestChange(session: Session, householdId: string, note: string): ApplyResult {
   const household = findHousehold(session, householdId);
   if (!household) return { session, error: "That household is not on today's roster." };
@@ -337,6 +459,11 @@ function lineStudents(session: Session, ids: string[]): { ids: string[]; error?:
     if (!child) continue;
     if (child.earlyRelease) {
       notes.push(`${child.firstName} ${child.lastName} was already picked up by ${child.earlyRelease.adult} at ${child.earlyRelease.time}.`);
+      continue;
+    }
+    const roll = session.attendance[id];
+    if (roll === "absent" || roll === "excused") {
+      notes.push(`${child.firstName} ${child.lastName} is absent today.`);
       continue;
     }
     included.push(id);

@@ -23,6 +23,43 @@ export type Student = {
   blocked: boolean;
   blockReason?: string;
   earlyRelease?: { adult: string; time: string };
+  allergens: string[];
+  allergyVerified: boolean;
+  mealBalanceCents: number;
+  mealNoCharge: boolean;
+};
+
+export type AttendanceStatus = "unmarked" | "present" | "absent" | "tardy" | "excused";
+
+export type Announcement = {
+  id: string;
+  title: string;
+  body: string;
+  audience: "school" | "grade" | "section";
+  audienceRef: string;
+};
+
+export type SchoolEvent = {
+  id: string;
+  title: string;
+  whenLabel: string;
+  audience: "school" | "grade" | "section";
+  audienceRef: string;
+};
+
+export type MenuItem = {
+  id: string;
+  name: string;
+  day: string;
+  priceCents: number;
+  allergens: string[];
+};
+
+export type MealOrder = {
+  id: string;
+  studentId: string;
+  itemId: string;
+  status: "ordered" | "served" | "blocked";
 };
 
 export type Household = {
@@ -81,6 +118,12 @@ export type Session = {
   changes: ChangeRequest[];
   releases: Release[];
   audit: AuditLine[];
+  attendance: Record<string, AttendanceStatus>;
+  announcements: Announcement[];
+  events: SchoolEvent[];
+  menu: MenuItem[];
+  orders: MealOrder[];
+  orderKeys: string[];
 };
 
 export type Action =
@@ -105,6 +148,13 @@ export type Action =
       secondPin: string;
       reason: string;
     }
+  | { type: "mark_attendance"; studentId: string; status: AttendanceStatus; staffId: string }
+  | { type: "submit_roll"; homeroomId: string; staffId: string }
+  | { type: "post_announcement"; title: string; body: string; audience: "school" | "grade" | "section"; audienceRef: string; staffId: string }
+  | { type: "add_event"; title: string; whenLabel: string; audience: "school" | "grade" | "section"; audienceRef: string; staffId: string }
+  | { type: "order_lunch"; studentId: string; itemId: string; idempotencyKey: string }
+  | { type: "load_meal"; studentId: string; amountCents: number; idempotencyKey: string }
+  | { type: "serve_lunch"; orderId: string; staffId: string }
   | { type: "reset" };
 
 export type StudentView = {
@@ -176,10 +226,21 @@ export type PublicSession = {
       id: string;
       name: string;
       grade: string;
+      homeroomId: string;
       blocked: boolean;
       earlyRelease?: { adult: string; time: string };
+      attendance: AttendanceStatus;
+      allergens: string[];
+      allergyVerified: boolean;
+      mealBalanceCents: number;
+      mealNoCharge: boolean;
     }[];
   }[];
+  announcements: Announcement[];
+  events: SchoolEvent[];
+  menu: MenuItem[];
+  orders: (MealOrder & { studentName: string; itemName: string; priceCents: number })[];
+  rolls: { studentId: string; name: string; grade: string; homeroomId: string; status: AttendanceStatus }[];
   changes: (ChangeRequest & { householdName: string })[];
   releases: Release[];
   audit: AuditLine[];

@@ -80,7 +80,7 @@ function QueueInner() {
               {household.vehicle ? (
                 <button className="quiet" type="button" onClick={() => { setFocusId(household.vehicle!.id); setQuery(""); }}>Show car</button>
               ) : (
-                <button className="quiet" type="button" disabled={pending} onClick={() => void act({ type: "manual", familyCode: household.familyCode, staffId }).then(() => setQuery(""))}>Add to line</button>
+                <button className="quiet" type="button" disabled={pending} onClick={() => { act({ type: "manual", familyCode: household.familyCode, staffId }); setQuery(""); }}>Add to line</button>
               )}
             </li>
           ))}

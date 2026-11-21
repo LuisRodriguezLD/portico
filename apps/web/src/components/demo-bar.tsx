@@ -11,6 +11,9 @@ const LINKS = [
   ["/teacher?room=dalton", "Grade 5"],
   ["/porch", "Porch"],
   ["/admin", "Office"],
+  ["/attendance", "Roll"],
+  ["/lunch", "Lunch"],
+  ["/news", "News"],
 ];
 
 export function DemoBar() {

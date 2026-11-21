@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start -p 43123 -H 0.0.0.0",
     "lint": "eslint",
-    "test": "tsx --test src/lib/reduce.test.ts"
+    "test": "tsx --test src/lib/reduce.test.ts src/lib/campus.test.ts"
   },
   "dependencies": {
     "next": "15.5.29",

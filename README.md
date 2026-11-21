@@ -16,7 +16,7 @@ npm install
 npm run dev
 ```
 
-The dev server listens on port 43123. Open the afternoon page, then the curb, a parent phone, a classroom, the porch, and the office. `npm test` checks the dismissal rules.
+The dev server listens on port 43123. Open the afternoon page, then the curb, a parent phone, a classroom, the porch, the office, the roll, lunch, and the news. The afternoon is stored in the browser, and every name is fictional. `npm test` checks the dismissal and Campus rules.
 
 ## Who it is for
 

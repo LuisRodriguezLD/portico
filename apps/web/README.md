@@ -7,4 +7,4 @@ npm install
 npm run dev
 ```
 
-The server listens on port 43123. Rules tests: `npm test`.
+The server listens on port 43123. The afternoon is stored in the browser. Rules tests: `npm test`.

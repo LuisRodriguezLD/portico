@@ -105,6 +105,7 @@ function ParentInner() {
             {child.name} · {child.grade}
             <br />
             <span style={{ color: "var(--muted)" }}>{text.plan} · {household.adultName}</span>
+            {child.attendance === "absent" || child.attendance === "excused" ? <><br />Marked {child.attendance} today.</> : null}
           </p>
         ))}
 
@@ -153,7 +154,8 @@ function ParentInner() {
             style={{ display: "grid", gap: "0.5rem" }}
             onSubmit={(event) => {
               event.preventDefault();
-              void act({ type: "request_change", householdId: household.id, note }).then(() => setNote(""));
+              act({ type: "request_change", householdId: household.id, note });
+              setNote("");
             }}
           >
             <input className="texty" aria-label={text.who} placeholder={text.who} value={note} onChange={(event) => setNote(event.target.value)} />

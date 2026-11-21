@@ -1,7 +1,7 @@
 import type { Session } from "./types";
 
 export function seed(): Session {
-  return {
+  const session: Session = {
     school: "Northbridge Day School",
     campus: "Lower school lane",
     clock: "2:41 PM",
@@ -20,6 +20,10 @@ export function seed(): Session {
         homeroomId: "shah",
         badge: "#245c4a",
         blocked: false,
+        allergens: [],
+        allergyVerified: true,
+        mealBalanceCents: 1500,
+        mealNoCharge: false,
       },
       {
         id: "leo",
@@ -30,6 +34,10 @@ export function seed(): Session {
         homeroomId: "dalton",
         badge: "#1e3a5f",
         blocked: false,
+        allergens: [],
+        allergyVerified: true,
+        mealBalanceCents: 1500,
+        mealNoCharge: false,
       },
       {
         id: "rohan",
@@ -40,6 +48,10 @@ export function seed(): Session {
         homeroomId: "shah",
         badge: "#8a4b1f",
         blocked: false,
+        allergens: [],
+        allergyVerified: true,
+        mealBalanceCents: 1500,
+        mealNoCharge: false,
       },
       {
         id: "sofia",
@@ -50,6 +62,10 @@ export function seed(): Session {
         homeroomId: "nguyen",
         badge: "#6b3f69",
         blocked: false,
+        allergens: [],
+        allergyVerified: true,
+        mealBalanceCents: 1500,
+        mealNoCharge: false,
       },
       {
         id: "mateo",
@@ -60,6 +76,10 @@ export function seed(): Session {
         homeroomId: "walsh",
         badge: "#3f4d2c",
         blocked: false,
+        allergens: [],
+        allergyVerified: true,
+        mealBalanceCents: 1500,
+        mealNoCharge: false,
       },
       {
         id: "ava",
@@ -70,6 +90,10 @@ export function seed(): Session {
         homeroomId: "nguyen",
         badge: "#6e2e2e",
         blocked: false,
+        allergens: [],
+        allergyVerified: true,
+        mealBalanceCents: 1500,
+        mealNoCharge: false,
       },
       {
         id: "sam",
@@ -81,6 +105,10 @@ export function seed(): Session {
         badge: "#3d3a36",
         blocked: true,
         blockReason: "Do not release. The office has the instruction.",
+        allergens: [],
+        allergyVerified: true,
+        mealBalanceCents: 1500,
+        mealNoCharge: false,
       },
       {
         id: "jonah",
@@ -91,6 +119,10 @@ export function seed(): Session {
         homeroomId: "walsh",
         badge: "#4a5560",
         blocked: false,
+        allergens: [],
+        allergyVerified: true,
+        mealBalanceCents: 1500,
+        mealNoCharge: false,
         earlyRelease: { adult: "Alex Reid", time: "1:10 PM" },
       },
     ],
@@ -200,5 +232,48 @@ export function seed(): Session {
     audit: [
       { at: "2026-11-17T19:10:00.000Z", text: "Diane Frost released Jonah Reid early to Alex Reid." },
     ],
+    attendance: {},
+    announcements: [
+      {
+        id: "ann-picture",
+        title: "Picture day is Thursday",
+        body: "Students should wear the uniform polo. Retakes are the following Tuesday.",
+        audience: "school",
+        audienceRef: "school",
+      },
+      {
+        id: "ann-library",
+        title: "Grade 2 library closes at 2",
+        body: "Return books to Priya Shah before dismissal.",
+        audience: "grade",
+        audienceRef: "Grade 2",
+      },
+    ],
+    events: [
+      { id: "evt-half", title: "Half day", whenLabel: "Friday, noon dismissal", audience: "school", audienceRef: "school" },
+      { id: "evt-trip", title: "Grade 5 museum trip", whenLabel: "Next Wednesday, 8:30 AM", audience: "grade", audienceRef: "Grade 5" },
+    ],
+    menu: [
+      { id: "sunbutter", name: "Sunflower butter sandwich", day: "Tuesday", priceCents: 450, allergens: [] },
+      { id: "peanut", name: "Peanut butter sandwich", day: "Tuesday", priceCents: 450, allergens: ["peanut"] },
+      { id: "milk", name: "Milk", day: "Tuesday", priceCents: 100, allergens: ["milk"] },
+    ],
+    orders: [],
+    orderKeys: [],
   };
+  for (const child of session.students) session.attendance[child.id] = "unmarked";
+  const maya = session.students.find((child) => child.id === "maya");
+  if (maya) {
+    maya.allergens = ["peanut"];
+    maya.allergyVerified = false;
+    maya.mealBalanceCents = 2000;
+  }
+  const rohan = session.students.find((child) => child.id === "rohan");
+  if (rohan) rohan.mealBalanceCents = 50;
+  const mateo = session.students.find((child) => child.id === "mateo");
+  if (mateo) {
+    mateo.mealNoCharge = true;
+    mateo.mealBalanceCents = 0;
+  }
+  return session;
 }

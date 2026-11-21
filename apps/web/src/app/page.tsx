@@ -27,7 +27,7 @@ function HomeInner() {
           It is Tuesday, 2:41 PM. The cutoff was 1:30. Anika Patel is at the curb in a white RAV4. The Chen car has not taken a number yet, because being on the way is not the same as being in the driveway.
         </p>
         <p>
-          Fobs and phones are simulated. A ticket is still issued only at the driveway, or when the office types a family code. Drill PINs, if you have to override Sam Ellis: James Whitfield 2468, Diane Frost 1357.
+          Fobs and phones are simulated. Every name is fictional. This afternoon stays in your browser, so a second tab on this device stays in step. A ticket is still issued only at the driveway, or when the office types a family code. Drill PINs, if you have to override Sam Ellis: James Whitfield 2468, Diane Frost 1357.
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(12rem, 1fr))", gap: "0.7rem", marginTop: "1.2rem" }}>
           <Door href="/queue" title="Curb" detail="James's iPad. Call, hold, loaded." />
@@ -36,6 +36,9 @@ function HomeInner() {
           <Door href="/teacher?room=dalton" title="Grade 5" detail="Chris Dalton. No changes. Nothing to tap." />
           <Door href="/porch" title="Porch" detail="The hallway screen. Names, no photos." />
           <Door href="/admin" title="Office" detail="Diane's desk. Delays, changes, devices." />
+          <Door href="/attendance" title="Roll" detail="Priya's morning. An absence leaves the carline." />
+          <Door href="/lunch" title="Lunch" detail="Maya cannot order peanut butter. Balances are prepaid." />
+          <Door href="/news" title="News" detail="Grade 2 hears about the library. Grade 1 does not." />
         </div>
       </main>
     </>

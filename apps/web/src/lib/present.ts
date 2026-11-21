@@ -78,10 +78,36 @@ export function present(session: Session): PublicSession {
           id: child.id,
           name: `${child.firstName} ${child.lastName}`,
           grade: child.grade,
+          homeroomId: child.homeroomId,
           blocked: child.blocked,
           earlyRelease: child.earlyRelease,
+          attendance: session.attendance[child.id] ?? "unmarked",
+          allergens: child.allergens,
+          allergyVerified: child.allergyVerified,
+          mealBalanceCents: child.mealBalanceCents,
+          mealNoCharge: child.mealNoCharge,
         };
       }),
+    })),
+    announcements: session.announcements,
+    events: session.events,
+    menu: session.menu,
+    orders: session.orders.map((order) => {
+      const child = session.students.find((item) => item.id === order.studentId);
+      const item = session.menu.find((row) => row.id === order.itemId);
+      return {
+        ...order,
+        studentName: child ? `${child.firstName} ${child.lastName}` : "Student",
+        itemName: item?.name ?? "Item",
+        priceCents: item?.priceCents ?? 0,
+      };
+    }),
+    rolls: session.students.map((child) => ({
+      studentId: child.id,
+      name: `${child.firstName} ${child.lastName}`,
+      grade: child.grade,
+      homeroomId: child.homeroomId,
+      status: session.attendance[child.id] ?? "unmarked",
     })),
     changes: session.changes.map((change) => ({
       ...change,
